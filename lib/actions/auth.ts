@@ -40,6 +40,16 @@ export async function register(formData: FormData) {
   return { success: true, email };
 }
 
+export async function resetPassword(email: string) {
+  const supabase = await createClient();
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${baseUrl}/auth/confirm?type=recovery&next=/login`,
+  });
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
 export async function logout() {
   const supabase = await createClient();
   await supabase.auth.signOut();

@@ -25,7 +25,13 @@ export default async function ComponentsPage() {
       ) : (
         <div className="space-y-8">
           {categories.map((cat) => {
-            const items = components.filter((c) => c.category === cat);
+            const items = components.filter((c) => c.category === cat).sort((a, b) => {
+              const sa = a.specs as Record<string, unknown>;
+              const sb = b.specs as Record<string, unknown>;
+              if (cat === "INVERTER") return (Number(sa.kva) || 0) - (Number(sb.kva) || 0);
+              if (cat === "PANEL") return (Number(sa.watts) || 0) - (Number(sb.watts) || 0);
+              return a.model.localeCompare(b.model);
+            });
             if (items.length === 0) return null;
             return (
               <div key={cat}>

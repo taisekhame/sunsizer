@@ -4,7 +4,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { BACKUP_HOUR_OPTIONS, PANEL_WATT_OPTIONS } from "@/lib/calculations/constants";
+import { BACKUP_HOUR_OPTIONS, PANEL_WATT_OPTIONS, DEFAULT_ASSUMPTIONS } from "@/lib/calculations/constants";
 import { cn } from "@/lib/utils";
 import type { DesignChoices, BatteryType } from "@/lib/calculations/types";
 
@@ -34,8 +34,8 @@ export function StepDesignChoices({ choices, setChoices, markupPercent, setMarku
         <Label className="text-sm font-medium mb-3 block">Battery Type</Label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {([
-            { type: "lithium" as const, label: "Lithium (LiFePO4)", desc: "51.2V 100Ah units · 80% DoD · Longer lifespan" },
-            { type: "tubular" as const, label: "Tubular Lead-Acid", desc: "12V 220Ah units · 50% DoD · Lower cost" },
+            { type: "lithium" as const, label: "Lithium (LiFePO4)", desc: "51.2V 100Ah units, 80% DoD, longer lifespan" },
+            { type: "tubular" as const, label: "Tubular Lead-Acid", desc: "12V 220Ah units, 50% DoD, lower cost" },
           ]).map((opt) => (
             <button
               key={opt.type}
@@ -132,7 +132,7 @@ export function StepDesignChoices({ choices, setChoices, markupPercent, setMarku
       </div>
 
       {/* Markup */}
-      <div className="max-w-xs">
+      <div className="max-w-xs mb-6">
         <Label htmlFor="markup" className="text-sm font-medium mb-2 block">
           Markup (%)
         </Label>
@@ -145,6 +145,42 @@ export function StepDesignChoices({ choices, setChoices, markupPercent, setMarku
           onChange={(e) => setMarkupPercent(parseFloat(e.target.value) || 0)}
           className="w-28"
         />
+      </div>
+
+      {/* Design Assumptions (read-only) */}
+      <div className="rounded-xl border border-border bg-muted/50 p-4">
+        <h3 className="text-sm font-[family-name:var(--font-ui)] font-medium mb-3">
+          Design Assumptions
+        </h3>
+        <p className="text-xs font-[family-name:var(--font-body)] text-muted-foreground mb-3">
+          These engineering defaults are used in all calculations.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm font-[family-name:var(--font-ui)]">
+          <div>
+            <p className="text-muted-foreground text-xs">Peak Sun Hours</p>
+            <p className="font-medium">{DEFAULT_ASSUMPTIONS.peakSunHours} h/day</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Performance Ratio</p>
+            <p className="font-medium">{DEFAULT_ASSUMPTIONS.performanceRatio}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Power Factor</p>
+            <p className="font-medium">{DEFAULT_ASSUMPTIONS.powerFactor}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Design Margin</p>
+            <p className="font-medium">{DEFAULT_ASSUMPTIONS.designMargin}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Inverter Efficiency</p>
+            <p className="font-medium">{DEFAULT_ASSUMPTIONS.inverterEfficiency}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground text-xs">Battery Efficiency</p>
+            <p className="font-medium">{DEFAULT_ASSUMPTIONS.batteryEfficiency}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

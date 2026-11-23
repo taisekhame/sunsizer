@@ -17,7 +17,22 @@ export async function getComponents(category?: string) {
 
   const { data, error } = await query;
   if (error) return { error: error.message, data: [] };
-  return { data: data || [] };
+
+  // Sort numerically by spec value within each category
+  const sorted = [...(data || [])].sort((a, b) => {
+    const sa = (a as { specs: Record<string, unknown> }).specs || {};
+    const sb = (b as { specs: Record<string, unknown> }).specs || {};
+    const catA = (a as { category: string }).category;
+    const catB = (b as { category: string }).category;
+    const catOrder: Record<string, number> = { INVERTER: 0, BATTERY: 1, PANEL: 2, ACCESSORY: 3 };
+    const catDiff = (catOrder[catA] ?? 9) - (catOrder[catB] ?? 9);
+    if (catDiff !== 0) return catDiff;
+    if (catA === "INVERTER") return (Number(sa.kva) || 0) - (Number(sb.kva) || 0);
+    if (catA === "PANEL") return (Number(sa.watts) || 0) - (Number(sb.watts) || 0);
+    return ((a as { model: string }).model || "").localeCompare((b as { model: string }).model || "");
+  });
+
+  return { data: sorted };
 }
 
 export async function getComponent(id: string) {
@@ -146,6 +161,18 @@ export async function getLatestPrices() {
       latestPrice: latest ? latest.unit_price : 0,
       isPlaceholder: latest ? latest.is_placeholder : true,
     };
+  });
+
+  // Sort numerically by spec value within each category
+  result.sort((a, b) => {
+    const sa = a.specs as Record<string, unknown>;
+    const sb = b.specs as Record<string, unknown>;
+    const catOrder: Record<string, number> = { INVERTER: 0, BATTERY: 1, PANEL: 2, ACCESSORY: 3 };
+    const catDiff = (catOrder[a.category] ?? 9) - (catOrder[b.category] ?? 9);
+    if (catDiff !== 0) return catDiff;
+    if (a.category === "INVERTER") return (Number(sa.kva) || 0) - (Number(sb.kva) || 0);
+    if (a.category === "PANEL") return (Number(sa.watts) || 0) - (Number(sb.watts) || 0);
+    return a.model.localeCompare(b.model);
   });
 
   return { data: result };

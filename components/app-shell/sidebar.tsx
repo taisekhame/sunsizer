@@ -9,7 +9,6 @@ import {
   PlusCircle,
   FolderKanban,
   Users,
-  Settings,
   LogOut,
   ChevronRight,
   PanelLeftClose,
@@ -23,6 +22,7 @@ import {
   Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { logout } from "@/lib/actions/auth";
 
 type NavItemData = {
   id: string;
@@ -44,7 +44,7 @@ type NavGroupData = {
 const navGroups: NavGroupData[] = [
   {
     items: [
-      { id: "search", title: "Search", icon: Search, shortcut: "⌘K" },
+      { id: "search", title: "Search", icon: Search, shortcut: "\u2318K" },
       { id: "dashboard", title: "Dashboard", icon: LayoutDashboard, href: "/dashboard" },
       { id: "new-quotation", title: "New Quotation", icon: PlusCircle, href: "/projects/new" },
       { id: "projects", title: "Projects", icon: FolderKanban, href: "/projects" },
@@ -61,11 +61,6 @@ const navGroups: NavGroupData[] = [
       { id: "admin-settings", title: "Settings", icon: Wrench, href: "/admin/settings", adminOnly: true },
     ],
   },
-];
-
-const bottomItems: NavItemData[] = [
-  { id: "settings", title: "Settings", icon: Settings, href: "/admin/settings", shortcut: "⌘," },
-  { id: "logout", title: "Log out", icon: LogOut },
 ];
 
 function NavItem({
@@ -143,16 +138,28 @@ function NavItem({
   );
 }
 
+interface SidebarProps {
+  userName: string;
+  userRole: "ADMIN" | "INSTALLER";
+  userEmail: string;
+}
+
 export function AppSidebar({
   collapsed,
   onCollapse,
-}: {
+  userName,
+  userRole,
+}: SidebarProps & {
   collapsed: boolean;
   onCollapse: (v: boolean) => void;
 }) {
   const pathname = usePathname();
   const [searchOpen, setSearchOpen] = useState(false);
-  const isAdmin = true; // TODO: check actual role
+  const isAdmin = userRole === "ADMIN";
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <>
@@ -204,18 +211,22 @@ export function AppSidebar({
 
         {/* Bottom */}
         <div className="border-t border-border/50 py-2 px-2 space-y-0.5">
-          {bottomItems.map((item) => (
-            <NavItem key={item.id} item={item} pathname={pathname} collapsed={collapsed} onSearchOpen={() => setSearchOpen(true)} />
-          ))}
+          <button
+            onClick={handleLogout}
+            className="w-full group flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all text-sm font-[family-name:var(--font-ui)] text-muted-foreground hover:bg-muted hover:text-foreground"
+          >
+            <LogOut className="w-4 h-4 shrink-0 text-muted-foreground" strokeWidth={1.5} />
+            {!collapsed && <span className="truncate flex-1 text-left">Log out</span>}
+          </button>
           {/* User profile */}
           {!collapsed && (
             <div className="flex items-center gap-2.5 px-3 py-2 mt-1">
               <div className="w-7 h-7 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center text-xs font-bold">
-                U
+                {userName?.[0]?.toUpperCase() || "U"}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium font-[family-name:var(--font-ui)] text-foreground truncate">User</p>
-                <p className="text-[10px] text-muted-foreground truncate">Admin</p>
+                <p className="text-xs font-medium font-[family-name:var(--font-ui)] text-foreground truncate">{userName}</p>
+                <p className="text-[10px] text-muted-foreground truncate">{userRole === "ADMIN" ? "Admin" : "Installer"}</p>
               </div>
             </div>
           )}
@@ -257,10 +268,14 @@ export function AppSidebar({
   );
 }
 
-export function MobileSidebar() {
+export function MobileSidebar({ userName, userRole }: SidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const isAdmin = true;
+  const isAdmin = userRole === "ADMIN";
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <>
@@ -306,9 +321,22 @@ export function MobileSidebar() {
               })}
             </div>
             <div className="border-t border-border/50 py-2 px-2 space-y-0.5">
-              {bottomItems.map((item) => (
-                <NavItem key={item.id} item={item} pathname={pathname} collapsed={false} onSearchOpen={() => {}} />
-              ))}
+              <button
+                onClick={handleLogout}
+                className="w-full group flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer transition-all text-sm font-[family-name:var(--font-ui)] text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <LogOut className="w-4 h-4 shrink-0" strokeWidth={1.5} />
+                <span className="truncate flex-1 text-left">Log out</span>
+              </button>
+              <div className="flex items-center gap-2.5 px-3 py-2 mt-1">
+                <div className="w-7 h-7 rounded-full bg-accent/20 border border-accent/30 flex items-center justify-center text-xs font-bold">
+                  {userName?.[0]?.toUpperCase() || "U"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium font-[family-name:var(--font-ui)] text-foreground truncate">{userName}</p>
+                  <p className="text-[10px] text-muted-foreground truncate">{userRole === "ADMIN" ? "Admin" : "Installer"}</p>
+                </div>
+              </div>
             </div>
           </aside>
         </>

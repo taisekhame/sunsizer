@@ -17,6 +17,7 @@ import { buildCostLines, calcCost } from "@/lib/calculations/cost";
 import { validateInputs, hasErrors } from "@/lib/calculations/validate";
 import type { Appliance, Assumptions, DesignChoices, SystemDesign, CostSummary } from "@/lib/calculations/types";
 
+import { CustomerPicker } from "./customer-picker";
 import { StepLoadAudit } from "./step-load-audit";
 import { StepDesignChoices } from "./step-design-choices";
 import { StepResults } from "./step-results";
@@ -43,6 +44,7 @@ export default function QuotationFlow() {
   const [choices, setChoices] = useState<DesignChoices>({ ...DEFAULT_CHOICES });
   const [assumptions] = useState<Assumptions>({ ...DEFAULT_ASSUMPTIONS });
   const [markupPercent, setMarkupPercent] = useState(DEFAULT_MARKUP_PERCENT);
+  const [customerId, setCustomerId] = useState<string | null>(null);
 
   const loadAudit = useMemo(() => calcLoadAudit(appliances), [appliances]);
 
@@ -88,7 +90,8 @@ export default function QuotationFlow() {
     setIsSubmitting(true);
     try {
       const result = await saveProject({
-        title: `Solar System Design  - ${new Date().toLocaleDateString()}`,
+        title: `Solar System Design - ${new Date().toLocaleDateString()}`,
+        customerId: customerId || undefined,
         systemType: "OFF_GRID",
         mode: "BASIC",
         inputs: {
@@ -189,11 +192,17 @@ export default function QuotationFlow() {
             >
               <CardContent className="p-6 md:p-8">
                 {currentStep === 0 && (
-                  <StepLoadAudit
-                    appliances={appliances}
-                    setAppliances={setAppliances}
-                    loadAudit={loadAudit}
-                  />
+                  <>
+                    <CustomerPicker
+                      selectedCustomerId={customerId}
+                      onSelect={(id, _name) => setCustomerId(id)}
+                    />
+                    <StepLoadAudit
+                      appliances={appliances}
+                      setAppliances={setAppliances}
+                      loadAudit={loadAudit}
+                    />
+                  </>
                 )}
                 {currentStep === 1 && (
                   <StepDesignChoices

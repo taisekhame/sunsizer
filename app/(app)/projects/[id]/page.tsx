@@ -18,7 +18,7 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
   const inputs = project.inputs as { appliances?: unknown[]; choices?: Record<string, unknown>; markupPercent?: number } | null;
   const load = results?.load as { connectedLoadW?: number; dailyEnergyKwh?: number } | null;
   const inverter = results?.inverter as { recommendedKva?: number } | null;
-  const battery = results?.battery as { numberOfBatteries?: number; description?: string } | null;
+  const battery = results?.battery as { numberOfBatteries?: number; description?: string; seriesCount?: number; parallelCount?: number; systemVoltage?: number; installedKwh?: number } | null;
   const pv = results?.pv as { numberOfPanels?: number; installedKwp?: number } | null;
   const cost = results?.cost as { subtotal?: number; markupAmount?: number; grandTotal?: number } | null;
   const backupTime = results?.backupTimeHours as number | undefined;
@@ -133,7 +133,14 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
           {battery && (
             <div className="bg-card rounded-xl border border-border p-4">
               <p className="text-xs font-[family-name:var(--font-ui)] text-muted-foreground uppercase tracking-wider mb-1">Batteries</p>
-              <p className="text-lg font-[family-name:var(--font-heading)]">{battery.numberOfBatteries}× {battery.description?.split(" ")[0]}</p>
+              <p className="text-lg font-[family-name:var(--font-heading)]">
+                {battery.numberOfBatteries} x {battery.description || "Battery"}
+              </p>
+              {battery.seriesCount != null && battery.parallelCount != null && (
+                <p className="text-xs font-[family-name:var(--font-body)] text-muted-foreground mt-1">
+                  {battery.seriesCount} series x {battery.parallelCount} parallel
+                </p>
+              )}
             </div>
           )}
           {pv && (

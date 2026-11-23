@@ -54,7 +54,7 @@ export function StepResults({ design, issues }: StepResultsProps) {
     {
       label: "Backup Time",
       value: `${design.backupTimeHours.toFixed(1)} hours`,
-      sub: "At average load",
+      sub: "Estimated backup at average load (not the chosen backup hours)",
       accent: true,
     },
     {
